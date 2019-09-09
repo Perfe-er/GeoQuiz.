@@ -16,10 +16,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG="MainActivity";
     private static final String KEY_INDEX="index";
     private static final int REQUEST_CODE_CHEAT=0;
+
+    private static final String SECOND_BUG="second_bug";
+    private static final String THIRD_BUG="third_bug";
+
     private int correctAnswer=0;
     private int answerLength=0;
     private boolean mIsCheat;
-
     private Button mTrueButton;
     private Button mFalseButton;
     private Button mNextButton;
@@ -47,8 +50,11 @@ public class MainActivity extends AppCompatActivity {
             for(int i=0;i<mQuestionBank.length;i++){
                 mQuestionBank[i].setIsAnswered(answerList[i]);
             }
+            mIsCheat=savedInstanceState.getBoolean(SECOND_BUG,false);
 
         }
+
+
 
         mCheatButton=(Button)findViewById(R.id.cheat_button);
         mCheatButton.setOnClickListener(new View.OnClickListener() {
@@ -152,11 +158,13 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG,"onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX,mCurrentIndex);
+
         int[] answerList = new int[mQuestionBank.length];
         for(int i=0 ;i<answerList.length;i++ ){
             answerList[i]=mQuestionBank[i].getIsAnswered();
         }
         savedInstanceState.putIntArray(KEY_INDEX,answerList);
+        savedInstanceState.putBoolean(SECOND_BUG,mIsCheat);
     }
 
     @Override
