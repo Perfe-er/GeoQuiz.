@@ -2,6 +2,7 @@ package com.example.zwq.geoquiz;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,10 +13,13 @@ import android.widget.TextView;
 public class CheatActivity extends AppCompatActivity {
     private static final String EXTRA_ANSWER_IS_TRUE="com.exampe.zwq.geoquiz.answer_is_true";
     private static final String EXTRA_ANSWER_SHOWN="com.exampe.zwq.geoquiz.answer_shown";
+    private static final String EXTRA_SURPLUS_TEXT="com.exampe.zwq.geoquiz.surplus_text";
+    private static int Surplus_Text=3;
 
     private boolean mAnswerIsTrue;
     private TextView mAnswerTextView;
     private Button mShowAnswerButton;
+    private TextView mShowApiTextView;
 
     private static final String FIRST_BUG="first_bug";
 
@@ -32,6 +36,8 @@ public class CheatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        int version=Integer.valueOf(Build.VERSION.SDK_INT);
+        Surplus_Text=getIntent().getIntExtra(EXTRA_SURPLUS_TEXT,3);
 
         if(savedInstanceState!=null){
             mAnswerIsTrue=savedInstanceState.getBoolean(FIRST_BUG,false);
@@ -52,9 +58,13 @@ public class CheatActivity extends AppCompatActivity {
                 }else{
                     mAnswerTextView.setText(R.string.false_button);
                 }
+                Surplus_Text--;
                 setAnswerShowResult(true);
             }
         });
+
+        mShowApiTextView=(TextView)findViewById(R.id.api_level);
+        mShowApiTextView.setText("API LEVEL:"+version);
 
     }
 
@@ -69,6 +79,7 @@ public class CheatActivity extends AppCompatActivity {
     public void setAnswerShowResult(boolean isAnswerShow){
         Intent date=new Intent();
         date.putExtra(EXTRA_ANSWER_SHOWN,isAnswerShow);
+        date.putExtra(EXTRA_SURPLUS_TEXT,Surplus_Text);
         setResult(RESULT_OK,date);
     }
 

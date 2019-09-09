@@ -19,15 +19,17 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String SECOND_BUG="second_bug";
     private static final String THIRD_BUG="third_bug";
+    private static final String EXTRA_SURPLUS_TEXT="com.exampe.zwq.geoquiz.surplus_text";
+    private static int Surplus_Text=3;
 
     private int correctAnswer=0;
     private int answerLength=0;
-    private boolean mIsCheat;
     private Button mTrueButton;
     private Button mFalseButton;
     private Button mNextButton;
     private Button mPrevButton;
     private Button mCheatButton;
+    private TextView mSurplusTextView;
     private TextView mQuestionTextView;
     private Question[] mQuestionBank=new Question[]{
             new Question(R.string.question_australia,true,0),
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
             new Question(R.string.question_oceans,true,0)
     };
     private int mCurrentIndex=0;
+    private boolean[] mIsCheat=new boolean[mQuestionBank.length];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,15 +49,18 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG,"onCreate(Bundle)called");
         if(savedInstanceState!=null){
             mCurrentIndex=savedInstanceState.getInt(KEY_INDEX,0);
+            mIsCheat=savedInstanceState.getBooleanArray(THIRD_BUG);
+
             int[] answerList =savedInstanceState.getIntArray(KEY_INDEX);
             for(int i=0;i<mQuestionBank.length;i++){
+                mIsCheat[i]=false;
                 mQuestionBank[i].setIsAnswered(answerList[i]);
             }
-            mIsCheat=savedInstanceState.getBoolean(SECOND_BUG,false);
+
 
         }
 
-
+        mSurplusTextView=(TextView)findViewById(R.id.surplus_text);
 
         mCheatButton=(Button)findViewById(R.id.cheat_button);
         mCheatButton.setOnClickListener(new View.OnClickListener() {
@@ -62,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 boolean answerTrue=mQuestionBank[mCurrentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(MainActivity.this,answerTrue);
+                intent.putExtra(EXTRA_SURPLUS_TEXT,Surplus_Text);
                 startActivityForResult(intent,REQUEST_CODE_CHEAT);
             }
         });
@@ -94,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mIsCheat=false;
+                mIsCheat[mCurrentIndex]=false;
                 updateQuestion();
                 answerLength++;
                 if(answerLength==mQuestionBank.length){
@@ -109,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
         mPrevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mIsCheat=false;
+                mIsCheat[mCurrentIndex]=false;
                 mCurrentIndex = (mCurrentIndex-1)%mQuestionBank.length;
                 int question = mQuestionBank[mCurrentIndex].getTextResId();
                 mQuestionTextView.setText(question);
@@ -134,13 +141,18 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        mIsCheat=CheatActivity.wasAnswerShow(date);
+        mIsCheat[mCurrentIndex]=CheatActivity.wasAnswerShow(date);
+        Surplus_Text=date.getIntExtra(EXTRA_SURPLUS_TEXT,0);
     }
 
     @Override
     public void onStart(){
         super.onStart();
         Log.d(TAG,"onStart() called");
+        if(Surplus_Text==0){
+            mCheatButton.setEnabled(false);
+        }
+        mSurplusTextView.setText("Remaining number of cheating:"+Surplus_Text);
     }
     @Override
     public void onResume(){
@@ -154,17 +166,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState){
-        super.onSaveInstanceState(savedInstanceState);
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
         Log.i(TAG,"onSaveInstanceState");
-        savedInstanceState.putInt(KEY_INDEX,mCurrentIndex);
+        outState.putInt(KEY_INDEX,mCurrentIndex);
 
         int[] answerList = new int[mQuestionBank.length];
         for(int i=0 ;i<answerList.length;i++ ){
             answerList[i]=mQuestionBank[i].getIsAnswered();
         }
-        savedInstanceState.putIntArray(KEY_INDEX,answerList);
-        savedInstanceState.putBoolean(SECOND_BUG,mIsCheat);
+        outState.putIntArray(KEY_INDEX,answerList);
+        outState.putBooleanArray(THIRD_BUG,mIsCheat);
     }
 
     @Override
@@ -199,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
     private void checkAnswer(boolean userPressedTrue){
         boolean answerIsTrue=mQuestionBank[mCurrentIndex].isAnswerTrue();
         int messageResId=0;
-        if(mIsCheat){
+        if(mIsCheat[mCurrentIndex]){
             messageResId=R.string.judgment_toast;
         }else {
             if (userPressedTrue == answerIsTrue) {
