@@ -2,8 +2,8 @@ package com.example.zwq.geoquiz;
 
 public class Question {
     private int mTextResId;
-    private  boolean mAnswerTrue;
-    private int mIsAnswered;
+    private  boolean mAnswerTrue; // 答案
+    private int mIsAnswered; //
 
 
 
